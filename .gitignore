@@ -30,3 +30,53 @@
 *.exe
 *.out
 *.app
+
+# Build artifacts
+build/
+cmake-build-debug/
+CMakeFiles/
+*.cmake
+Makefile
+*.ninja
+
+# Object files and executables
+*.o
+*.obj
+chunk_preview  # Or the name of your executable
+*.exe
+*.dll
+*.dylib
+*.so
+
+# Temporary files
+*.DS_Store
+Thumbs.db
+*.swp
+*~
+*.tmp
+
+# Editor backups
+*.bak
+*.orig
+
+# IDE files (CLion)
+.idea/
+*.iml
+.idea/workspace.xml  # You might want to keep this if you use version control for settings
+
+# SDL-related temporary/intermediate files
+*.ilk
+*.pdb
+*.exp
+
+# C++ dependencies (if using any package manager)
+/libs/*/.git
+/libs/*/build
+/libs/*/CMakeFiles
+/libs/*/*.cmake
+
+
+# Example: If using vcpkg and building in "debug" configuration
+/vcpkg_installed/debug/*/*.ilk
+/vcpkg_installed/debug/*/*.pdb
+
