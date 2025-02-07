@@ -1,63 +1,70 @@
-#include <SDL3/SDL.h>  // Include SDL3 header
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_render.h>
 #include <iostream>
-#include <vector>
-#include <cmath>
 
-// ... (Point3D struct, rotateY, and project functions remain the same)
-
-void renderCube(SDL_Renderer* renderer, float angle) {
-    // ... (Cube vertices and edges definitions remain the same)
-
-    // Drawing with SDL3 (API change here)
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    for (const auto& edge : edges) {
-        SDL_RenderDrawLineF(renderer, // Use DrawLineF for floating-point coordinates
-                           vertices[edge.first].x,
-                           vertices[edge.first].y,
-                           vertices[edge.second].x,
-                           vertices[edge.second].y);
-    }
-}
-
+#include "src/Cube.h"
+#include "src/Point3.h"
 
 int main(int argc, char* argv[]) {
-    // SDL3 initialization
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
-        std::cerr << "SDL Error: " << SDL_GetError() << std::endl;
+    // Initialize SDL
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
         return 1;
     }
 
-    // Window creation (SDL3 API change)
-    SDL_Window* window = SDL_CreateWindow("Chunk Preview",
-                                          SDL_WINDOWPOS_CENTERED,
-                                          SDL_WINDOWPOS_CENTERED,
-                                          800, 600, SDL_WINDOW_SHOWN);
-    if (!window) { /* Error handling */ }
-
-
-    // Renderer creation (SDL3 API change)
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, NULL, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); // Add VSYNC for smoother animation
-    if (!renderer) { /* Error handling */ }
-
-
-    float angle = 0.0f;
-    bool running = true;
-    while (running) {
-         // ... (Event handling remains the same)
-
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
-
-        renderCube(renderer, angle);
-
-        SDL_RenderPresent(renderer); // No need to pass the window in SDL3
-        angle += 1.0f;
+    // Create window
+    constexpr auto windowFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+    SDL_Window* window = SDL_CreateWindow("Triangle", 640, 480, windowFlags);
+    if (window == nullptr) {
+        std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+        return 1;
     }
 
-    // SDL3 cleanup (API change)
+    // Create renderer
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
+    if (renderer == nullptr) {
+        std::cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+        return 1;
+    }
+
+    // Set render color to red
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+
+
+    // Clear the screen
+    SDL_RenderClear(renderer);
+
+    // Render the triangle.  This uses SDL_RenderGeometry for efficiency. You could alternatively use SDL_RenderDrawLine for simpler rendering.
+    constexpr float scale = 50.0f;
+
+    const auto cube = geometry::Cube(scale) + geometry::Point3{100, 100, 0};
+    cube.draw(renderer);
+
+    const auto cube2 = geometry::Cube(scale) + geometry::Point3{100, 300, 0};
+    cube2.draw(renderer);
+
+    // Update the screen
+    SDL_RenderPresent(renderer);
+
+
+    // Event loop (simplified for demonstration)
+    SDL_Event event;
+    bool quit = false;
+    while (!quit) {
+        while(SDL_PollEvent(&event) != 0)
+        {
+          if (event.type == SDL_EVENT_QUIT) {
+            quit = true;
+            break;
+          }
+        }
+    }
+
+
+    // Cleanup
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
-    SDL_Quit(); // Important: Shut down SDL subsystems properly
+    SDL_Quit();
 
     return 0;
 }
