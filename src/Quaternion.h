@@ -8,11 +8,7 @@
 namespace geometry {
 
 struct Quaternion {
-    float w, x, y, z;
-
-    // Constructors
-    Quaternion() : w(1.0f), x(0.0f), y(0.0f), z(0.0f) {}
-    Quaternion(const float w, const float x, const float y, const float z) : w(w), x(x), y(y), z(z) {}
+    const float w, x, y, z;
 
     // Create quaternion from axis-angle representation
     static Quaternion from_axis_angle(const float angle_degrees, float x, float y, float z) {
@@ -37,45 +33,33 @@ struct Quaternion {
     // Basic operations
     Quaternion operator*(const Quaternion& q) const {
         return {
-            w*q.w - x*q.x - y*q.y - z*q.z,
-            w*q.x + x*q.w + y*q.z - z*q.y,
-            w*q.y - x*q.z + y*q.w + z*q.x,
-            w*q.z + x*q.y - y*q.x + z*q.w
+            w * q.w - x * q.x - y * q.y - z * q.z,
+            w * q.x + x * q.w + y * q.z - z * q.y,
+            w * q.y - x * q.z + y * q.w + z * q.x,
+            w * q.z + x * q.y - y * q.x + z * q.w
         };
     }
 
-    Quaternion& operator*=(const Quaternion& q) {
-        *this = *this * q;
-        return *this;
-    }
-
-    [[nodiscard]]
+     [[nodiscard]]
     Quaternion conjugate() const {
         return {w, -x, -y, -z};
     }
 
     [[nodiscard]]
     float magnitude() const {
-        return std::sqrt(w*w + x*x + y*y + z*z);
-    }
-
-    // Normalize
-    void normalize() {
-        if (const float mag = magnitude(); mag > 0.0f) {
-            const float inv_mag = 1.0f / mag;
-            w *= inv_mag;
-            x *= inv_mag;
-            y *= inv_mag;
-            z *= inv_mag;
-        }
+        return std::sqrt(w * w + x * x + y * y + z * z);
     }
 
     // Get normalized copy
     [[nodiscard]]
     Quaternion normalized() const {
-        Quaternion q = *this;
-        q.normalize();
-        return q;
+        if (const float mag = magnitude(); mag > 0.0f) {
+            const float inv_mag = 1.0f / mag;
+            return {w * inv_mag, x * inv_mag, y * inv_mag, z * inv_mag};
+        }
+        else {
+            return *this;
+        }
     }
 
     // Convert to rotation matrix (3x3)
@@ -123,11 +107,10 @@ struct Quaternion {
 
     [[nodiscard]]
     static Quaternion slerp(const Quaternion& q1, const Quaternion& q2, const float t) {
-        Quaternion q2_copy = q2;
-        float dot = q1.w*q2.w + q1.x*q2.x + q1.y*q2.y + q1.z*q2.z;
+        float dot = q1.w * q2.w + q1.x * q2.x + q1.y * q2.y + q1.z * q2.z;
+        const Quaternion q2_copy = {-q2.w, -q2.x, -q2.y, -q2.z};
 
         if (dot < 0.0f) {
-            q2_copy = Quaternion(-q2.w, -q2.x, -q2.y, -q2.z);
             dot = -dot;
         }
 

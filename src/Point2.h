@@ -1,7 +1,3 @@
-//
-// Created by Steven Bayer on 2/6/25.
-//
-
 #ifndef POINT2_H
 #define POINT2_H
 

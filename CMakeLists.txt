@@ -9,22 +9,20 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 
-# This assumes the SDL source is available in vendored/SDL
-add_subdirectory(libs/SDL EXCLUDE_FROM_ALL)
+include(FetchContent)
+FetchContent_Declare(
+        glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
+        GIT_TAG 3.3.8  # You can update this to a newer version if needed
+)
 
-set(SDLIMAGE_VENDORED ON)
-set(SDLIMAGE_AVIF OFF)	# disable formats we don't use to make the build faster and smaller.
-set(SDLIMAGE_BMP OFF)
-set(SDLIMAGE_JPEG OFF)
-set(SDLIMAGE_WEBP OFF)
-add_subdirectory(libs/SDL_image EXCLUDE_FROM_ALL)
+# Configure GLFW build options
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 
-
-## Mixer for audio
-add_subdirectory(libs/SDL_mixer EXCLUDE_FROM_ALL)
-
-set(SDLTTF_VENDORED OFF)
-add_subdirectory(libs/SDL_ttf EXCLUDE_FROM_ALL)
+FetchContent_MakeAvailable(glfw)
 
 # Add ImGui files
 set(IMGUI_DIR libs/imgui)
@@ -42,18 +40,21 @@ add_executable(chunk_preview main.cpp
         src/Cube.h
         src/Quaternion.h
         src/Point2.h
-        src/Point3.h
-        src/ProjectionHelper.h)
+        src/Point3.h)
 
 # Link ImGui to the project
 target_include_directories(chunk_preview PRIVATE ${IMGUI_DIR})
 target_link_libraries(chunk_preview PRIVATE imgui)
 
-#target_link_libraries(chunk_preview PRIVATE SDL3::SDL3)
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC
-        SDL3_ttf::SDL3_ttf
-        SDL3_mixer::SDL3_mixer
-        SDL3_image::SDL3_image
-        SDL3::SDL3
-)
+# Link GLFW and OpenGL
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE glfw)
+
+# Find and link OpenGL
+find_package(OpenGL REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE OpenGL::GL)
+
+# On macOS, we need to link additional frameworks
+if(APPLE)
+    target_link_libraries(${EXECUTABLE_NAME} PRIVATE "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
+endif()
 
