@@ -37,29 +37,32 @@ inline void MouseKeyboardMovementComponent::on_key_event(GLFWwindow* window, con
     }
 
     Transform& transform = gameObject->get_transform();
-    glm::vec3 position = transform.position;
 
     const float delta = speed * 0.1f;
 
+    glm::vec3 direction(0.0f);
     switch (key) {
         case GLFW_KEY_W:
-            position.z += delta;
-            break;
+            direction = glm::vec3(0.0f, 0.0f, 1.0f);
+        break;
         case GLFW_KEY_S:
-            position.z -= delta;
-            break;
+            direction = glm::vec3(0.0f, 0.0f, -1.0f);
+        break;
         case GLFW_KEY_A:
-            position.x += delta;
-            break;
+            direction = glm::vec3(1.0f, 0.0f, 0.0f);
+        break;
         case GLFW_KEY_D:
-            position.x -= delta;
-            break;
+            direction = glm::vec3(-1.0f, 0.0f, 0.0f);
+        break;
         default:
-            break;;
+            return;
     }
 
-    transform.position = position;
+    // Rotate the direction vector by the object's rotation
+    const glm::vec3 rotated_direction = transform.rotation * direction;
 
+    // Update position
+    transform.position += rotated_direction * delta;
 }
 
 inline void MouseKeyboardMovementComponent::on_mouse_move(GLFWwindow *window, const double xpos, const double ypos) {
