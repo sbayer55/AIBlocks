@@ -3,95 +3,50 @@
 
 #include <vector>
 #include <typeindex>
-#include <concepts>
 #include <unordered_map>
 #include <ranges>
 #include <sstream>
 
 #include "Transform.h"
 
-// Forward declaration
 class GameObject;
 
 class Component {
 public:
     virtual ~Component() = default;
 
-    virtual void update(float deltaTime) {
-    }
+    virtual void update(float deltaTime) {}
 
-    GameObject *gameObject{nullptr}; // Owner game object
+    GameObject* game_object{nullptr}; // Owner game object
 };
 
 class GameObject {
 public:
-    explicit GameObject(std::string name = "GameObject") :
-        name_(std::move(name)),
-        transform_(TRANSFORM_ZERO)
-    {}
+    explicit GameObject(std::string name = "GameObject") : name_(std::move(name)),
+        transform_(TRANSFORM_ZERO) {
+    }
 
     ~GameObject() = default;
 
-    template<typename T, typename... Args> requires std::derived_from<T, Component>
-    T *add_component(Args &&... args) {
-        // Throw if already has a component of that type
-        if (const auto type_index = std::type_index(typeid(T)); components_.contains(type_index)) {
-            throw std::runtime_error("Component of type " + std::string(typeid(T).name()) + " already exists");
-        }
-
-        auto component = std::make_unique<T>(std::forward<Args>(args)...);
-        T *componentPtr = component.get();
-        componentPtr->gameObject = this;
-        components_[std::type_index(typeid(T))] = std::move(component);
-        return componentPtr;
-    }
+    void add_component(std::unique_ptr<Component> component);
 
     [[nodiscard]]
-    std::string get_component_names() const {
-        const std::vector<std::string> names =  components_
-            | std::views::keys
-            | std::views::transform([](const std::type_index& idx) {
-                return std::string(idx.name());
-            })
-            | std::ranges::to<std::vector>();
-        std::stringstream ss;
-        std::copy(
-            names.begin(),
-            std::prev(names.end()),
-            std::ostream_iterator<std::string>(ss, ", ")
-        );
-        ss << names.back();
-        return ss.str();
-    }
+    std::string get_component_names() const;
 
-    std::ostream& operator<<(std::ostream& os) const {
-        os << "GameObject: { Name: " << name_ << ", Components: [" << get_component_names() << "] }";
-        return os;
-    }
-
+    std::ostream& operator<<(std::ostream& os) const;
 
     [[nodiscard]]
-    std::string get_name() const {
-        return name_;
-    }
+    std::string get_name() const;
 
-    void set_name(const std::string &name) {
-        name_ = name;
-    }
+    void set_name(const std::string& name);
+
+    Transform& get_transform();
 
     [[nodiscard]]
-    Transform& get_transform() {
-        return transform_;
-    }
-
-    [[nodiscard]]
-    const Transform& get_transform() const {
-        return transform_;
-    }
-
+    const Transform& get_transform() const;
 
 private:
-    std::unordered_map<std::type_index, std::unique_ptr<Component>> components_;
+    std::unordered_map<std::type_index, std::unique_ptr<Component> > components_;
     std::string name_;
     Transform transform_;
 };

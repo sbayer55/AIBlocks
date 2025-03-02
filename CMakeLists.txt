@@ -40,11 +40,7 @@ set(IMGUI_FILES
         ${IMGUI_DIR}/imgui_tables.cpp
         ${IMGUI_DIR}/imgui_widgets.cpp
         ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
-#        ${IMGUI_DIR}/backends/imgui_impl_glfw.h
         ${IMGUI_DIR}/backends/imgui_impl_opengl2.cpp
-#        ${IMGUI_DIR}/backends/imgui_impl_opengl2.h
-#        src/imgui_impl_glfw.cpp
-#        src/imgui_impl_opengl2.cpp
 )
 
 # Add ImGui to the project
@@ -54,10 +50,11 @@ add_executable(chunk_preview main.cpp
         src/Vertex.h
         src/Transform.h
         src/OpenGLDebug.h
-        src/Foo.h
-        src/GameObject.h
+        src/MouseKeyboardMovementComponent.cpp
         src/MouseKeyboardMovementComponent.h
         src/ImguiImplementation.h
+        src/GameObject.h
+        src/GameObject.cpp
 )
 
 include_directories(${IMGUI_DIR})

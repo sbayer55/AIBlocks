@@ -84,7 +84,7 @@ inline void debugTransform(const Transform& transform) {
               << transform.scale.z << "\n";
 }
 
-inline void checkGLErrors(const char* label) {
+inline void check_opengl_errors(const char* label) {
     GLenum error;
     while ((error = glGetError()) != GL_NO_ERROR) {
         std::cerr << "OpenGL error at " << label << ": "
