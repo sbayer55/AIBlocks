@@ -22,9 +22,12 @@ public:
 
 class GameObject {
 public:
-    explicit GameObject(std::string name = "GameObject") : name_(std::move(name)),
-        transform_(TRANSFORM_ZERO) {
-    }
+    Transform transform;
+
+    explicit GameObject(std::string name = "GameObject") :
+        name_(std::move(name)),
+        transform(TRANSFORM_ZERO)
+    { }
 
     ~GameObject() = default;
 
@@ -38,17 +41,9 @@ public:
     [[nodiscard]]
     std::string get_name() const;
 
-    void set_name(const std::string& name);
-
-    Transform& get_transform();
-
-    [[nodiscard]]
-    const Transform& get_transform() const;
-
 private:
     std::unordered_map<std::type_index, std::unique_ptr<Component> > components_;
     std::string name_;
-    Transform transform_;
 };
 
 #endif //GAME_OBJECT_H

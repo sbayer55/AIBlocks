@@ -3,11 +3,12 @@
 
 #include "glm/gtx/io.hpp"
 #include "src/Cube.h"
-#include "src/Foo.h"
 #include "src/MouseKeyboardMovementComponent.h"
 #include "src/OpenGLDebug.h"
 #include "imgui.h"
+#include "glm/gtc/type_ptr.hpp"
 #include "src/ImguiImplementation.h"
+#include "src/MeshComponent.h"
 
 using GLFWWindowPtr = std::unique_ptr<GLFWwindow, decltype(&glfwDestroyWindow)>;
 
@@ -130,6 +131,52 @@ auto initializeOpenGL(const int windowWidth, const int windowHeight) {
     return GLFWWindowPtr(window, glfwDestroyWindow);
 }
 
+std::vector<GameObject> game_objects() {
+    std::vector<GameObject> objects = std::vector<GameObject>();
+    std::vector<glm::vec3> cube_vertices = {
+        // Front face
+        {-0.5f, -0.5f,  0.5f},
+        { 0.5f, -0.5f,  0.5f},
+        { 0.5f,  0.5f,  0.5f},
+        {-0.5f,  0.5f,  0.5f},
+        // Back face
+        {-0.5f, -0.5f, -0.5f},
+        { 0.5f, -0.5f, -0.5f},
+        { 0.5f,  0.5f, -0.5f},
+        {-0.5f,  0.5f, -0.5f}
+    };
+
+    std::vector<unsigned int> cube_indices = {
+        // Front
+        0, 1, 2, 2, 3, 0,
+        // Back
+        4, 5, 6, 6, 7, 4,
+        // Left
+        7, 3, 0, 0, 4, 7,
+        //Right
+        1, 5, 6, 6, 2, 1,
+        //Top
+        3, 2, 6, 6, 7, 3,
+        //Bottom
+        0, 1, 5, 5, 4, 0
+    };
+
+    MeshComponent cube_mesh = MeshComponent(cube_vertices, cube_indices);
+
+    for (int x = 0; x < 10; x++) {
+        for (int y = 0; y < 10; y++) {
+            for (int z = 0; z < 1; z++) {
+                auto cube = GameObject();
+                cube.add_component(std::make_unique<MeshComponent>(cube_vertices, cube_indices));
+                cube.transform.position = glm::vec3(x, y, z) * 20.0f;
+                objects.push_back(cube);
+            }
+        }
+    }
+
+    return objects;
+}
+
 int main(int argc, char* argv[]) {
     constexpr int window_width = 1200;
     constexpr int window_height = 800;
@@ -208,6 +255,8 @@ int main(int argc, char* argv[]) {
     GameObject camera{};
     camera.add_component(std::move(movement_component));
 
+    auto objects = game_objects();
+
     // Main loop
     while (!glfwWindowShouldClose(window.get())) {
         // Clear the view
@@ -224,14 +273,14 @@ int main(int argc, char* argv[]) {
         glMatrixMode(GL_PROJECTION);
         const float aspect_ratio = static_cast<float>(framebuffer_width) / static_cast<float>(framebuffer_height);
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect_ratio, 0.1f, 1000.0f);
-        glLoadMatrixf(value_ptr(projection));
+        glLoadMatrixf(glm::value_ptr(projection));
 
         // Objects
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
 
-        auto camera_rotation = camera.get_transform().rotation;
-        auto camera_position = camera.get_transform().position;
+        auto camera_rotation = camera.transform.rotation;
+        auto camera_position = camera.transform.position;
 
         // 1. Create the rotation matrix from the camera's quaternion.
         glm::mat4 camera_rotation_matrix = glm::mat4_cast(camera_rotation);
@@ -254,9 +303,30 @@ int main(int argc, char* argv[]) {
         debug::drawDebugAxes();
         debug::drawBoundingBox();
 
-        for (auto& cube: cubes) {
+        // for (auto& cube: cubes) {
+        //     glPushMatrix();
+        //     cube.draw();
+        //     glPopMatrix();
+        // }
+
+        for (auto& object: objects) {
+            // How am I going to get this?
+            MeshComponent* mesh = object
+
+            auto position = &object.transform.position;
+            auto rotation = &object.transform.rotation;
+            auto scale = &object.transform.scale;
             glPushMatrix();
-            cube.draw();
+            glTranslatef(position->x, position->y, position->z);
+            // this->glRotateF();
+            glScalef(scale->x, scale->y, scale->z);
+
+            glBegin(GL_QUADS);
+            for (const auto& vertex : vertices_) {
+                glColor4f(vertex.r, vertex.g, vertex.b, vertex.a);
+                glVertex3f(vertex.x, vertex.y, vertex.z);
+            }
+            glEnd();
             glPopMatrix();
         }
 

@@ -46,6 +46,7 @@ set(IMGUI_FILES
 # Add ImGui to the project
 add_library(imgui STATIC ${IMGUI_FILES})
 add_executable(chunk_preview main.cpp
+        src/Cube.cpp
         src/Cube.h
         src/Vertex.h
         src/Transform.h
@@ -55,6 +56,11 @@ add_executable(chunk_preview main.cpp
         src/ImguiImplementation.h
         src/GameObject.h
         src/GameObject.cpp
+        src/RenderComponent.cpp
+        src/RenderComponent.h
+        src/Color.h
+        src/MeshComponent.cpp
+        src/MeshComponent.h
 )
 
 include_directories(${IMGUI_DIR})

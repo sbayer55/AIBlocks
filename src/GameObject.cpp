@@ -6,7 +6,6 @@
 #include <iterator>
 #include <stdexcept>
 #include <memory>
-#include <utility>
 #include <vector>
 
 void GameObject::add_component(std::unique_ptr<Component> component) {
@@ -47,18 +46,4 @@ std::ostream& GameObject::operator<<(std::ostream& os) const {
 [[nodiscard]]
 std::string GameObject::get_name() const {
     return name_;
-}
-
-void GameObject::set_name(const std::string& name) {
-    name_ = name;
-}
-
-[[nodiscard]]
-Transform& GameObject::get_transform() {
-    return transform_;
-}
-
-[[nodiscard]]
-const Transform& GameObject::get_transform() const {
-    return transform_;
 }
